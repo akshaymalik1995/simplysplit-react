@@ -1,16 +1,35 @@
 import type { Item, Person } from "../types/bill"
-import { useContext, useState, useEffect } from "react"
+import { useContext, useState, useEffect, useReducer } from "react"
 import { StoreContext } from "../store"
 import { removeItem, addItem } from "../store/actions"
+import { Action } from "../types/store"
+
+// Writing a reducer function to keep track of the item state instead of useState
+
+const updateItemAction = (payload : object) => {
+    return {
+        type : "UPDATE",
+        payload : payload
+    }
+}
+
+const itemReducer = (state : Item, action : Action) => {
+    switch (action.type) {
+        case "UPDATE":
+            return {
+                ...state, ...action.payload
+            }
+        default:
+            return state
+    }
+}
 
 
 const ItemInput = (props: { item: Item }) => {
     const [dropdownOpen, setDropdownOpen] = useState(false)
     const item: Item = props.item
     const [state, dispatch] = useContext(StoreContext)
-    const [amount, setAmount] = useState("")
-    const [name, setName] = useState("")
-    const [contributions, setContributions] = useState<Person[]>([])
+    const [itemState, itemDispatch] = useReducer<React.Reducer<Item, Action>>(itemReducer, item)
     function removeItemHandler(id: string) {
         if (typeof (dispatch) === 'function') {
             dispatch(removeItem(id))
@@ -18,12 +37,14 @@ const ItemInput = (props: { item: Item }) => {
     }
 
     useEffect(() => {
-        setContributions([...contributions.filter(p => state?.people.find(person => person.id === p.id))])
+        itemDispatch(updateItemAction({contributedBy : [...itemState.contributedBy.filter(p => state?.people.find(person => person.id === p.id))]}))
     }, [state?.people])
 
     useEffect(() => {
-        updateItem()
-    }, [contributions, amount, name])
+        if (typeof dispatch === 'function') {
+            dispatch(addItem(itemState))
+        }
+    }, [itemState])
 
     useEffect(() => {
         function handleClickOutside() {
@@ -45,40 +66,28 @@ const ItemInput = (props: { item: Item }) => {
         
     }
 
-    function updateItem(){
-        const updatedItem = {
-            id: item.id,
-            amount: +amount,
-            name: name,
-            contributedBy: [...contributions]
-        }
-
-        if (typeof dispatch === 'function') {
-            dispatch(addItem(updatedItem))
-        }
+    function updateItem(payload : object){
+        itemDispatch(updateItemAction(payload))
     }
 
     function updateItemHandler(e: React.FormEvent) {
         e.preventDefault()
-        // updateItem()
     }
 
     function addEveryoneToContribution(){
         if (state){
-            setContributions([...state.people])
+            itemDispatch(updateItemAction({contributedBy : [...state.people]}))
         } 
     }
 
     function addContribution(person: Person) {
         // Check if the person is already in the list
-        const personExists = contributions.find(p => p.id === person.id)
+        const personExists = itemState.contributedBy.find(p => p.id === person.id)
         if (personExists) { return }
-        setContributions([...contributions, person])
-        
+        itemDispatch(updateItemAction({contributedBy : [...itemState.contributedBy, person]}))
     }
     function removeContribution(person: Person) {
-        setContributions([...contributions.filter(p => p.id !== person.id)])
-
+        itemDispatch(updateItemAction({contributedBy : [...itemState.contributedBy.filter(p => p.id !== person.id)]}))
     }
 
 
@@ -91,9 +100,9 @@ const ItemInput = (props: { item: Item }) => {
             <div>
                 <form onSubmit={(e) => updateItemHandler(e)} action="">
                     <div className="flex items-center space-x-4">
-                        <input className="my-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" step={0.01} value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="Amount" type="number" name="" id="" />
-                        <input className="my-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={name} onChange={(e) => setName(e.target.value)} placeholder="Item Name (Optional) " type="text" name="" id="" />
-                        <button className="h-9 rounded w-16 bg-red-300 hover:bg-red-400 flex justify-center items-center" type="button" onClick={() => removeItemHandler(props.item.id)}>x</button>
+                        <input className="my-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" step={0.01} value={itemState.amount || ""} onChange={(e) => updateItem({amount : +e.target.value})} placeholder="Amount" type="number" name="" id="" />
+                        <input className="my-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={itemState.name} onChange={(e) => updateItem({name : e.target.value})} placeholder="Item Name (Optional) " type="text" name="" id="" />
+                        <button className="h-8 rounded w-20 bg-red-300 hover:bg-red-400 flex justify-center items-center" type="button" onClick={() => removeItemHandler(props.item.id)}>x</button>
                         <button type="submit"></button>
                        
                     {state && state?.people.length > 0 && (
@@ -102,7 +111,7 @@ const ItemInput = (props: { item: Item }) => {
                         <div className={`absolute z-10 border ${!dropdownOpen ? "hidden" : ""} bg-white bg-opacity-100 rounded mt-2 top-full`}>                    
                             <div onClick={() => addEveryoneToContribution() } className="bg-red-200 cursor-pointer hover:bg-red-300 rounded m-2 px-2 py-2">Everyone</div>
                             {state?.people.map(person => {
-                                if (contributions.find(p => p.id === person.id)) {return ("")}
+                                if (itemState.contributedBy.find(p => p.id === person.id)) {return ("")}
                                 return (
                                     <div onClick={() => addContribution(person)} key={person.id} className="bg-red-200 cursor-pointer hover:bg-red-300 rounded m-2 px-2 py-2">{person.name}</div>
                                 )
@@ -118,7 +127,7 @@ const ItemInput = (props: { item: Item }) => {
 
                 </form>
                 <div className="flex space-x-4 flex-wrap">
-                    {contributions.map(person => (
+                    {itemState.contributedBy.map(person => (
                         <div className="bg-red-300 rounded flex items-center space-x-4 px-2 py-1" key={person.id}>
                             <span>{person.name}</span>
                             <span onClick={() => removeContribution(person)} className="cursor-pointer text-red-500 hover:text-white">x</span>
