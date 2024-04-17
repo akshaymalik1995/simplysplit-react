@@ -1,4 +1,4 @@
-import { useReducer } from "react"
+import { useEffect, useReducer } from "react"
 import {StoreContext} from "./store"
 import { reducer, initialState } from "./store/reducers"
 import People from "./components/People"
@@ -6,7 +6,11 @@ import Items from "./components/Items"
 import Total from "./components/Total"
 
 function App() {
-  const [globalState, dispatch] = useReducer(reducer, initialState)
+  const savedState = localStorage.getItem("globalState") ? JSON.parse(localStorage.getItem("globalState") || "") : initialState
+  const [globalState, dispatch] = useReducer(reducer, savedState)
+  useEffect(() => {
+    localStorage.setItem("globalState", JSON.stringify(globalState))
+  }, [globalState])
   return (
     <div className="App">
       <StoreContext.Provider value = {[globalState, dispatch]}>
