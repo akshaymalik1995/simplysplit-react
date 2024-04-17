@@ -5,9 +5,12 @@ import PersonList from "./PersonList"
 const People = () => {
     return (
         <>
-        <h2 className="text-3xl my-1">People</h2>
+        <div className="">
+        <h2 className="text-3xl my-2">People</h2>
         <AddPerson />
         <PersonList />
+        </div>
+        
         </>
     )
 }

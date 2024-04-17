@@ -15,16 +15,16 @@ function App() {
     <div className="App">
       <StoreContext.Provider value = {[globalState, dispatch]}>
         <div className="mx-auto mt-8 container px-4">
-          <div className="flex flex-col md:flex-row space-x-0 md:space-x-12">
-            <div className="border max-w-xl p-4">
-              <div className="mb-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div className="md:col-span-2 max-w-4xl p-4">
+              <div className="mb-8">
                 <h1 className="text-4xl mb-4">Simply Split</h1>
                 <p>A simple tool for simple bill splitting. Designed for DoorDash / UberEats group orders, restaurant bills, grocery receipts, and any other basic multi-person bill.</p>
               </div>
             <People />
             <Items />
             </div>
-            <div className="flex-2">
+            <div className="md:col-span-1">
             <Total />
             </div>
           </div>

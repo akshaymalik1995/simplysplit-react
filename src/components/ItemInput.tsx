@@ -3,6 +3,8 @@ import { useContext, useState, useEffect, useReducer } from "react"
 import { StoreContext } from "../store"
 import { removeItem, addItem } from "../store/actions"
 import { Action } from "../types/store"
+import { TextInput, Button , Dropdown } from "flowbite-react"
+import { HiX } from "react-icons/hi"
 
 // Writing a reducer function to keep track of the item state instead of useState
 
@@ -97,28 +99,29 @@ const ItemInput = (props: { item: Item }) => {
 
     return (
         <>
-            <div>
-                <form onSubmit={(e) => updateItemHandler(e)} action="">
+            <div className="my-4">
+                <form className="my-2" onSubmit={(e) => updateItemHandler(e)} action="">
                     <div className="flex items-center space-x-4">
-                        <input className="my-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" step={0.01} value={itemState.amount || ""} onChange={(e) => updateItem({amount : +e.target.value})} placeholder="Amount" type="number" name="" id="" />
-                        <input className="my-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={itemState.name} onChange={(e) => updateItem({name : e.target.value})} placeholder="Item Name (Optional) " type="text" name="" id="" />
-                        <button className="h-8 rounded w-20 bg-red-300 hover:bg-red-400 flex justify-center items-center" type="button" onClick={() => removeItemHandler(props.item.id)}>x</button>
+                        <TextInput step={0.01} value={itemState.amount || ""} onChange={(e) => updateItem({amount : +e.target.value})} placeholder="Amount" type="number" name="" id=""  />
+                       
+                        <TextInput value={itemState.name} onChange={(e) => updateItem({name : e.target.value})} placeholder="Item Name (Optional) " type="text" name="" id="" />
+                       
+                       <Button className="bg-red-400 w-8 h-8 rounded" type="button" onClick={() => removeItemHandler(props.item.id)}><HiX /></Button>
+                       
                         <button type="submit"></button>
                        
                     {state && state?.people.length > 0 && (
-                        <div className="relative">
-                        <div onClick={(e) => toggleDropdown(e)} className="px-2 rounded py-2 border cursor-pointer">People</div>
-                        <div className={`absolute z-10 border ${!dropdownOpen ? "hidden" : ""} bg-white bg-opacity-100 rounded mt-2 top-full`}>                    
-                            <div onClick={() => addEveryoneToContribution() } className="bg-red-200 cursor-pointer hover:bg-red-300 rounded m-2 px-2 py-2">Everyone</div>
+                        <Dropdown size={"sm"} className="bg-white" label="Shared">
+                            <Dropdown.Item onClick={() => addEveryoneToContribution() }>Everyone</Dropdown.Item>
                             {state?.people.map(person => {
                                 if (itemState.contributedBy.find(p => p.id === person.id)) {return ("")}
                                 return (
-                                    <div onClick={() => addContribution(person)} key={person.id} className="bg-red-200 cursor-pointer hover:bg-red-300 rounded m-2 px-2 py-2">{person.name}</div>
+                                    <Dropdown.Item onClick={() => addContribution(person)} key={person.id}>{person.name}</Dropdown.Item>
                                 )
                             }
                             )}
-                        </div>
-                    </div>
+
+                        </Dropdown>
                     )}
                         
                     </div>
@@ -126,15 +129,17 @@ const ItemInput = (props: { item: Item }) => {
 
 
                 </form>
-                <div className="flex space-x-4 flex-wrap">
+                <div className="flex flex-wrap">
                     {itemState.contributedBy.map(person => (
-                        <div className="bg-red-300 rounded flex items-center space-x-4 px-2 py-1" key={person.id}>
-                            <span>{person.name}</span>
-                            <span onClick={() => removeContribution(person)} className="cursor-pointer text-red-500 hover:text-white">x</span>
-                        </div>
+                        <div className="bg-red-300 my-2 mr-2 rounded items-center flex space-x-4 px-4 py-2" key={person.id}>
+                        <div>{person.name}</div>
+                        <div onClick={() => removeContribution(person)} className="cursor-pointer text-gray-700  flex justify-center items-center w-6 h-6 rounded hover:bg-gray-200 hover:text-gray-900 font-bold"><HiX/></div>
+                    </div>
+                       
                     ))}
                 </div>
             </div>
+            <hr></hr>
         </>
     )
 }

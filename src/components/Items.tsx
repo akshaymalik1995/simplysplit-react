@@ -4,7 +4,7 @@ import { getUniqueId } from "../helpers"
 import ItemInput from "./ItemInput"
 import { StoreContext } from "../store"
 import { addItem } from "../store/actions"
-
+import { Button } from "flowbite-react"
 const Items = () => {
     const [ state, dispatch] = useContext(StoreContext)
     function addItemHandler(){
@@ -22,9 +22,10 @@ const Items = () => {
     }
     return (
         <div className="my-8">
-        <h2 className="text-3xl my-1">Items</h2>
-        <p className="my-1">Add each line item</p>
-        <button className="text-white my-1 w-full bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded text-sm px-5 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800" onClick={() => addItemHandler()} >Add Item</button>
+        <h2 className="text-3xl my-2">Items</h2>
+        <p className="my-2">Add each line item</p>
+        <Button className="w-full" onClick={() => addItemHandler()}>Add Item</Button>
+        
         <div>
             {state?.items.map(item => (
                 <div key={item.id}>
