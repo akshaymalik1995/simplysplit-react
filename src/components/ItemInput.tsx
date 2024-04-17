@@ -130,7 +130,7 @@ const ItemInput = (props: { item: Item }) => {
                                 {state?.people.map(person => {
                                     return (
                                         <Dropdown.Item className="flex items-center gap-2 cursor-pointer" key={person.id}>
-                                            <Checkbox className="cursor-pointer" checked={itemState.contributedBy.includes(person)} onChange={e => e.target.checked ? addContribution(person) : removeContribution(person)} id={person.name} />
+                                            <Checkbox className="cursor-pointer" checked={itemState.contributedBy.find(p => p.id === person.id) ? true : false} onChange={e => e.target.checked ? addContribution(person) : removeContribution(person)} id={person.name} />
                                             <Label className="cursor-pointer" htmlFor={person.name}>{person.name}</Label>
                                         </Dropdown.Item>
 
