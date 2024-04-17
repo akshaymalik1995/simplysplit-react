@@ -16,8 +16,9 @@ const Total = () => {
             const newTotalShare: TotalShare = {}
             const items = state?.items
             items?.forEach(item => {
-                if (item.contributedBy.length > 0) {
+                if (item.contributedBy.length > 0 && item.paidBy) { 
                     const share = item.amount / item.contributedBy.length
+                    console.log(item.paidBy)
                     item.contributedBy.forEach(person => {
                         if (person.name in newTotalShare) {
                             newTotalShare[person.name] += share
@@ -25,8 +26,13 @@ const Total = () => {
                             newTotalShare[person.name] = share
                         }
                     })
+                    if (item.paidBy.name in newTotalShare) {
+                        newTotalShare[item.paidBy.name] -= item.amount
+                    }
+                   
                 }
             })
+            console.log(newTotalShare)
             setTotalShare(newTotalShare)
         }
         calculate()
@@ -50,7 +56,7 @@ const Total = () => {
 
                     </Table.Head>
                     <Table.Body>
-                        {Object.keys(totalShare).filter(name => totalShare[name] > 0).map(name => (
+                        {Object.keys(totalShare).map(name => (
                             <Table.Row key={name}>
                                 <Table.Cell>{name}</Table.Cell>
                                 <Table.Cell>₹{totalShare[name].toFixed(2)}</Table.Cell>
@@ -59,11 +65,7 @@ const Total = () => {
                     </Table.Body>
                 </Table>
             </div>
-            <div className="flex p-4">
-                <div className="font-bold">
-                    Bill Total: ₹{Object.keys(totalShare).reduce((prev, key) => totalShare[key] + prev, 0).toFixed(2)}
-                </div>
-            </div>
+            
         </div>
 
     )

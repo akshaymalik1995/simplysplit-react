@@ -31,7 +31,7 @@ export const reducer = (state: State, action: Action) => {
                 }
             }
             return {
-                ...state, items: [...state.items, action.payload]
+                ...state, items: [ action.payload , ...state.items, ]
             }
         case REMOVE_PERSON:
             return {

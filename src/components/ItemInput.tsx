@@ -38,7 +38,7 @@ const ItemInput = (props: { item: Item }) => {
     }
 
     useEffect(() => {
-        itemDispatch(updateItemAction({ contributedBy: [...itemState.contributedBy.filter(p => state?.people.find(person => person.id === p.id))] }))
+        itemDispatch(updateItemAction({ contributedBy: [...itemState.contributedBy.filter(p => state?.people.find(person => person.id === p.id))], paidBy : state?.people.find(person => person.id === item.paidBy?.id ) ? item.paidBy : null}))
     }, [state?.people])
 
     useEffect(() => {
@@ -67,6 +67,18 @@ const ItemInput = (props: { item: Item }) => {
         }
     }
 
+    function addPaidBy(person : Person){
+        if (state) {
+            itemDispatch(updateItemAction({ paidBy: person }))
+        }
+    }
+
+    function removePaidBy(){
+        if (state) {
+            itemDispatch(updateItemAction({ paidBy: null }))
+        }
+    }
+
     function addContribution(person: Person) {
         // Check if the person is already in the list
         const personExists = itemState.contributedBy.find(p => p.id === person.id)
@@ -86,7 +98,7 @@ const ItemInput = (props: { item: Item }) => {
         <>
             <div className="my-4">
                 <form className="my-2" onSubmit={(e) => updateItemHandler(e)} action="">
-                    <div className="flex items-center space-x-4">
+                    <div className="flex flex-wrap items-center gap-4">
                         <TextInput step={0.01} value={itemState.amount || ""} onChange={(e) => updateItem({ amount: +e.target.value })} placeholder="Amount" type="number" name="" id="" />
 
                         <TextInput value={itemState.name} onChange={(e) => updateItem({ name: e.target.value })} placeholder="Item Name (Optional) " type="text" name="" id="" />
@@ -94,16 +106,30 @@ const ItemInput = (props: { item: Item }) => {
                         <Button className="bg-red-400 w-8 h-8 rounded" type="button" onClick={() => removeItemHandler(props.item.id)}><HiX /></Button>
 
                         <button type="submit"></button>
+                        {state && state?.people.length > 0 && (
+                            <Dropdown dismissOnClick={false} size={"sm"} className="bg-white" label="Paid">
+                                {state?.people.map(person => {
+                                    return (
+                                        <Dropdown.Item className="flex items-center gap-2 cursor-pointer" key={person.id}>
+                                            <Checkbox className="cursor-pointer" checked={itemState.paidBy?.id === person.id} onChange={e => e.target.checked ? addPaidBy(person) : removePaidBy()} id={person.name} />
+                                            <Label className="cursor-pointer" htmlFor={person.name}>{person.name}</Label>
+                                        </Dropdown.Item>
+
+                                    )
+                                })}
+                            </Dropdown>
+                        )}
+
 
                         {state && state?.people.length > 0 && (
                             <Dropdown dismissOnClick={false} size={"sm"} className="bg-white" label="Shared">
                                 <Dropdown.Item className="flex gap-2 " >
-                                <Checkbox className="cursor-pointer" checked={state?.people.length === itemState.contributedBy.length} onChange={(e) => e.target.checked ? addEveryoneToContribution() : removeEveryoneFromContribution()} id="everyone" />
-                                <Label className="cursor-pointer" htmlFor="everyone">Everone</Label>
+                                    <Checkbox className="cursor-pointer" checked={state?.people.length === itemState.contributedBy.length} onChange={(e) => e.target.checked ? addEveryoneToContribution() : removeEveryoneFromContribution()} id="everyone" />
+                                    <Label className="cursor-pointer" htmlFor="everyone">Everone</Label>
                                 </Dropdown.Item>
                                 {state?.people.map(person => {
                                     return (
-                                        <Dropdown.Item className="flex gap-2 cursor-pointer" key={person.id}>
+                                        <Dropdown.Item className="flex items-center gap-2 cursor-pointer" key={person.id}>
                                             <Checkbox className="cursor-pointer" checked={itemState.contributedBy.includes(person)} onChange={e => e.target.checked ? addContribution(person) : removeContribution(person)} id={person.name} />
                                             <Label className="cursor-pointer" htmlFor={person.name}>{person.name}</Label>
                                         </Dropdown.Item>
